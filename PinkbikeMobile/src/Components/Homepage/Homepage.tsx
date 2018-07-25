@@ -1,5 +1,14 @@
-import { Component } from "../../../node_modules/@types/react";
+import React from "react";
+import { View, Text } from "react-native";
 
-export class Homepage extends Component<any, any> {
-  
+export class Homepage extends React.Component<any, any> {
+  render() {
+    return (
+      <View>
+        <Text>
+          Hello world!
+        </Text>
+      </View>
+    )
+  }
 }
