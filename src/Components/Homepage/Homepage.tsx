@@ -26,7 +26,7 @@ export class Homepage extends React.Component<any, any> {
     })
   }
 
-  private _processDescription(description: string, type: string): string {
+  private _processDescription(description: string, type: string): any {
     let parsedDescription = new htmlParser().parseFromString(description, "text/html");
     if (type == "description") {
       return parsedDescription.getElementsByTagName("br")[1].nextSibling.data;
@@ -34,8 +34,8 @@ export class Homepage extends React.Component<any, any> {
       return parsedDescription.getElementsByTagName("img")[0].getAttribute("src");
     } else if (type == "comments") {
       let tempDataStorage = parsedDescription.getElementsByTagName("br")[2].nextSibling.data;
-      let preProcessed: string = (tempDataStorage.split(", Comments: ")[1]);
-      return preProcessed.slice(0, -1);
+      let preProcessed: string = (tempDataStorage.split("Comments: ")[1]);
+      return Number(preProcessed.slice(0, -2));
     }
     return "";
   }
