@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text, ActivityIndicator, Image, Button, Linking } from "react-native";
+// import  FullWidthImage  from "./../../Assets/Components/FullWidthImage";
 import RSSService from "./../../Services/RSS-Service";
 import { FeedItem } from "./../../Models/Feed-Item";
 const htmlParser = require("react-native-html-parser").DOMParser;
@@ -9,7 +10,7 @@ export class Homepage extends React.Component<any, any> {
     super(props);
     this.state = {
       isLoading: true,
-      RSSFeed: []
+      RSSFeed: [-1]
     }
   }
 
@@ -19,9 +20,8 @@ export class Homepage extends React.Component<any, any> {
 
   private _getRSSFeed(): void {
     RSSService.getRSSFeed().then((res) => {
-      this.setState({ RSSFeed: res.items, isLoading: false });
       this._processRSSItems(res.items).then((res) => {
-        console.log(res);
+        this.setState({ RSSFeed: res, isLoading: false});
       })
     })
   }
@@ -45,7 +45,7 @@ export class Homepage extends React.Component<any, any> {
     items.forEach((item: any) => {
       let processedFeedItem = new FeedItem();
       processedFeedItem.Title = item.title;
-      processedFeedItem.DatePublished = new Date(item.published);
+      processedFeedItem.DatePublished = new Date(item.published) == new Date() ? "Today" : new Date(item.published).toUTCString();
       processedFeedItem.URL = item.links[0].url;
       processedFeedItem.Comments = this._processDescription(item.description, "comments");
       processedFeedItem.ThumbnailLink = this._processDescription(item.description, "imageSource");
@@ -65,9 +65,20 @@ export class Homepage extends React.Component<any, any> {
     } else {
       return (
         <View>
-          <Text>Done</Text>
+          <View>
+            <Image style={{ width: 150, height: 100 }} source={{ uri: this.state.RSSFeed[0].ThumbnailLink }}/>
+            <Text>{this.state.RSSFeed[0].DatePublished}</Text>
+            <Text>{this.state.RSSFeed[0].Title}</Text>
+            <Text>{this.state.RSSFeed[0].Description}</Text>
+            <Text>{this.state.RSSFeed[0].Comments} Comments</Text>
+            <Button color="#D61D29" title="SHOW ARTICLE" onPress={() => this.openArticle(this.state.RSSFeed[0].URL) }/>
+          </View>
         </View>
       )
     }
+  }
+
+  openArticle(link: string) {
+    Linking.openURL(link);
   }
 }

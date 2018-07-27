@@ -1,8 +1,8 @@
 export class FeedItem {
   Title: string;
   Description: string;
-  DatePublished: Date;
+  DatePublished: string;
   ThumbnailLink: string;
-  Comments: any;
+  Comments: Number;
   URL: string;
 }
