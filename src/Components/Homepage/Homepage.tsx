@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, ActivityIndicator, Image, Button, Linking } from "react-native";
+import React, { ReactElement } from "react";
+import { View, Text, ActivityIndicator, Image, Button, Linking, FlatList } from "react-native";
 // import  FullWidthImage  from "./../../Assets/Components/FullWidthImage";
 import RSSService from "./../../Services/RSS-Service";
 import { FeedItem } from "./../../Models/Feed-Item";
@@ -10,7 +10,8 @@ export class Homepage extends React.Component<any, any> {
     super(props);
     this.state = {
       isLoading: true,
-      RSSFeed: [-1]
+      RSSFeed: [],
+      isRefreshing: false
     }
   }
 
@@ -55,6 +56,24 @@ export class Homepage extends React.Component<any, any> {
     return Feed;
   }
 
+  private _renderItem = ({ item }: any): ReactElement<{}> => {
+    return (
+      <View>
+        <Image style={{ width: 150, height: 100 }} source={{ uri: item.ThumbnailLink }}/>
+        <Text>{ item.DatePublished }</Text>
+        <Text>{ item.Title }</Text>
+        <Text>{ item.Description }</Text>
+        <Text>{ item.Comments } Comments</Text>
+        <Button color="#D61D29" title="SHOW ARTICLE" onPress={ () => this.openArticle(item.URL) }/>
+      </View>
+    );
+  }
+
+  private _refreshFeed(): void {
+    this._getRSSFeed();
+    this.setState({ isRefreshing: false });
+  }
+
   render() {
     if (this.state.isLoading) {
       return (
@@ -64,16 +83,23 @@ export class Homepage extends React.Component<any, any> {
       )
     } else {
       return (
-        <View>
-          <View>
-            <Image style={{ width: 150, height: 100 }} source={{ uri: this.state.RSSFeed[0].ThumbnailLink }}/>
-            <Text>{this.state.RSSFeed[0].DatePublished}</Text>
-            <Text>{this.state.RSSFeed[0].Title}</Text>
-            <Text>{this.state.RSSFeed[0].Description}</Text>
-            <Text>{this.state.RSSFeed[0].Comments} Comments</Text>
-            <Button color="#D61D29" title="SHOW ARTICLE" onPress={() => this.openArticle(this.state.RSSFeed[0].URL) }/>
-          </View>
-        </View>
+        <FlatList
+          data={ this.state.RSSFeed }
+          renderItem={ this._renderItem }
+          keyExtractor={ (item: any) => item.Comments.toString() }
+          refreshing={ this.state.isRefreshing }
+          onRefresh={ () => this._refreshFeed() }
+        />
+        // <View>
+        //   <View>
+        //     <Image style={{ width: 150, height: 100 }} source={{ uri: this.state.RSSFeed[0].ThumbnailLink }}/>
+        //     <Text>{this.state.RSSFeed[0].DatePublished}</Text>
+        //     <Text>{this.state.RSSFeed[0].Title}</Text>
+        //     <Text>{this.state.RSSFeed[0].Description}</Text>
+        //     <Text>{this.state.RSSFeed[0].Comments} Comments</Text>
+        //     <Button color="#D61D29" title="SHOW ARTICLE" onPress={() => this.openArticle(this.state.RSSFeed[0].URL) }/>
+        //   </View>
+        // </View>
       )
     }
   }
