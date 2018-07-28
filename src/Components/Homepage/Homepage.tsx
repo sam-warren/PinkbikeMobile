@@ -1,8 +1,9 @@
 import React, { ReactElement } from "react";
-import { View, Text, ActivityIndicator, Image, Button, Linking, FlatList } from "react-native";
+import { View, Text, ActivityIndicator, Image, Linking, FlatList, StyleSheet, Dimensions } from "react-native";
 // import  FullWidthImage  from "./../../Assets/Components/FullWidthImage";
 import RSSService from "./../../Services/RSS-Service";
 import { FeedItem } from "./../../Models/Feed-Item";
+import Icon from "react-native-vector-icons/MaterialIcons";
 const htmlParser = require("react-native-html-parser").DOMParser;
 
 
@@ -32,7 +33,6 @@ export class Homepage extends React.Component<any, any> {
 
   private _processDescription(description: string, type: string): any {
     let parsedDescription = new htmlParser().parseFromString(description, "text/html");
-    console.log(parsedDescription);
     if (type == "description") {
       return parsedDescription.getElementsByTagName("br")[1].nextSibling.data;
     } else if (type == "imageSource") {
@@ -49,8 +49,10 @@ export class Homepage extends React.Component<any, any> {
     let Feed: FeedItem[] = [];
     items.forEach((item: any) => {
       let processedFeedItem = new FeedItem();
-      processedFeedItem.Title = item.title.replace(/&amp;/g, '&');
-      processedFeedItem.DatePublished = new Date(item.published) == new Date() ? "Today" : new Date(item.published).toUTCString();
+      let publishedDate = new Date(item.published);
+      let formattedDate = publishedDate.getDate() + "/" + (publishedDate.getMonth() + 1) + "/" + publishedDate.getFullYear()
+      processedFeedItem.Title = item.title;
+      processedFeedItem.DatePublished = formattedDate;
       processedFeedItem.URL = item.links[0].url;
       processedFeedItem.Comments = this._processDescription(item.description, "comments");
       processedFeedItem.ThumbnailLink = this._processDescription(item.description, "imageSource");
@@ -62,13 +64,23 @@ export class Homepage extends React.Component<any, any> {
 
   private _renderItem = ({ item }: any): ReactElement<{}> => {
     return (
-      <View>
-        <Image style={{ width: 150, height: 100 }} source={{ uri: item.ThumbnailLink }}/>
-        <Text>{ item.DatePublished }</Text>
-        <Text>{ item.Title }</Text>
-        <Text>{ item.Description.replace(/&amp;/g, "&") }</Text>
-        <Text>{ item.Comments } Comments</Text>
-        <Button color="#D61D29" title="SHOW ARTICLE" onPress={ () => this.openArticle(item.URL) }/>
+      <View style={ styles.feedItem }>
+        <View style={styles.feedItemData}>
+          <View style={styles.leftFeedItemContainer}>
+            <Image style={styles.feedItemPictureContainer} source={{ uri: item.ThumbnailLink }} resizeMode="contain"/>
+          </View>
+          <View style={styles.rightFeedItemContainer}>
+            <Text>{ item.DatePublished }</Text>
+            <Text style={styles.feedItemTitle}>{ item.Title.replace(/&amp;/g, "&") }</Text>
+            <Text>{ item.Description }</Text>
+            <Text>{ item.Comments } Comments</Text>
+          </View>
+        </View>
+        <View style={styles.buttonContainer}>
+          <Icon.Button name="link" backgroundColor="#D61D29" onPress={() => { this.openArticle(item.URL) }}>
+            <Text style={styles.buttonText}>SHOW ARTICLE</Text>
+          </Icon.Button>
+        </View>
       </View>
     );
   }
@@ -81,29 +93,23 @@ export class Homepage extends React.Component<any, any> {
   render() {
     if (this.state.isLoading) {
       return (
-        <View style={{ flex: 1, justifyContent: "center" }}>
+        <View style={ styles.activityIndicatorContainer }>
           <ActivityIndicator size="large" color="#D61D29"/>
         </View>
       )
     } else {
       return (
-        <FlatList
-          data={ this.state.RSSFeed }
-          renderItem={ this._renderItem }
-          keyExtractor={ (item: any) => (index++).toString() }
-          refreshing={ this.state.isRefreshing }
-          onRefresh={ () => this._refreshFeed() }
-        />
-        // <View>
-        //   <View>
-        //     <Image style={{ width: 150, height: 100 }} source={{ uri: this.state.RSSFeed[0].ThumbnailLink }}/>
-        //     <Text>{this.state.RSSFeed[0].DatePublished}</Text>
-        //     <Text>{this.state.RSSFeed[0].Title}</Text>
-        //     <Text>{this.state.RSSFeed[0].Description}</Text>
-        //     <Text>{this.state.RSSFeed[0].Comments} Comments</Text>
-        //     <Button color="#D61D29" title="SHOW ARTICLE" onPress={() => this.openArticle(this.state.RSSFeed[0].URL) }/>
-        //   </View>
-        // </View>
+        <View style={styles.listContainer}>
+          <FlatList
+            style={styles.flatlist}
+            data={ this.state.RSSFeed }
+            renderItem={ this._renderItem }
+            keyExtractor={ () => (index++).toString() }
+            refreshing={ this.state.isRefreshing }
+            onRefresh={ () => this._refreshFeed() }
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
       )
     }
   }
@@ -112,3 +118,44 @@ export class Homepage extends React.Component<any, any> {
     Linking.openURL(link);
   }
 }
+
+const styles = StyleSheet.create({
+  listContainer: {
+    flex: 1
+  },
+  buttonText: {
+    color: "#FFFFFF"
+  },
+  feedItemTitle: {
+    fontWeight: "bold"
+  },
+  activityIndicatorContainer: {
+    flex: 1,
+    justifyContent: "center"
+  },
+  feedItem: {
+    flex: 1
+  },
+  feedItemPictureContainer: {
+    width: (Dimensions.get("window").width / 3),
+    height: (Dimensions.get("window").height / 8),
+  },
+  leftFeedItemContainer: {
+    flex: 3
+  },
+  rightFeedItemContainer: {
+    flex: 5
+  },
+  buttonContainer: {
+    margin: 5
+  },
+  feedItemData: {
+    flex: 1,
+    margin: 5,
+    flexDirection: "row",
+    justifyContent: "flex-start"
+  },
+  flatlist: {
+    backgroundColor: "#FFFFFF"
+  }
+});
