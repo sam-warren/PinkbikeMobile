@@ -5,6 +5,9 @@ import RSSService from "./../../Services/RSS-Service";
 import { FeedItem } from "./../../Models/Feed-Item";
 const htmlParser = require("react-native-html-parser").DOMParser;
 
+
+let index = 0;
+
 export class Homepage extends React.Component<any, any> {
   constructor(props: any) {
     super(props);
@@ -29,6 +32,7 @@ export class Homepage extends React.Component<any, any> {
 
   private _processDescription(description: string, type: string): any {
     let parsedDescription = new htmlParser().parseFromString(description, "text/html");
+    console.log(parsedDescription);
     if (type == "description") {
       return parsedDescription.getElementsByTagName("br")[1].nextSibling.data;
     } else if (type == "imageSource") {
@@ -45,7 +49,7 @@ export class Homepage extends React.Component<any, any> {
     let Feed: FeedItem[] = [];
     items.forEach((item: any) => {
       let processedFeedItem = new FeedItem();
-      processedFeedItem.Title = item.title;
+      processedFeedItem.Title = item.title.replace(/&amp;/g, '&');
       processedFeedItem.DatePublished = new Date(item.published) == new Date() ? "Today" : new Date(item.published).toUTCString();
       processedFeedItem.URL = item.links[0].url;
       processedFeedItem.Comments = this._processDescription(item.description, "comments");
@@ -62,7 +66,7 @@ export class Homepage extends React.Component<any, any> {
         <Image style={{ width: 150, height: 100 }} source={{ uri: item.ThumbnailLink }}/>
         <Text>{ item.DatePublished }</Text>
         <Text>{ item.Title }</Text>
-        <Text>{ item.Description }</Text>
+        <Text>{ item.Description.replace(/&amp;/g, "&") }</Text>
         <Text>{ item.Comments } Comments</Text>
         <Button color="#D61D29" title="SHOW ARTICLE" onPress={ () => this.openArticle(item.URL) }/>
       </View>
@@ -86,7 +90,7 @@ export class Homepage extends React.Component<any, any> {
         <FlatList
           data={ this.state.RSSFeed }
           renderItem={ this._renderItem }
-          keyExtractor={ (item: any) => item.Comments.toString() }
+          keyExtractor={ (item: any) => (index++).toString() }
           refreshing={ this.state.isRefreshing }
           onRefresh={ () => this._refreshFeed() }
         />
