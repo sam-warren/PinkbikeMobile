@@ -13,5 +13,7 @@ After that, follow these instructions to run the app:
  - If you have an Android device, scan that using the Expo app on your phone. The app will open.
  - If you have an iOS device, look for the address where the app is being hosted. It will look something like "exp://192.168.XX.XXX:19000". Paste this address in a new Safari window. As long as you have the Expo app installed on your iOS device, it should prompt you to "Open with Expo". The app will open.
 
+![Sample Screenshot](https://github.com/sam-warren/PinkbikeMobile/blob/master/src/Assets/Images/screenshot.jpg)
+
 This app is a work in progress. If you want to make any changes, PRs are welcome!
 For any questions about the app send me an email at samwarren4@gmail.com.
